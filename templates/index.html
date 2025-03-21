@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Summarizer</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/scripts.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Audio Summarizer</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="audio">Upload Audio File:</label>
+            <input type="file" name="audio" id="audio" required>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>
