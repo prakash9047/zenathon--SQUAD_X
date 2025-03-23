@@ -122,6 +122,7 @@ results page in app
 3. **GitHub Integration**: Connect to repositories to provide context for analysis
 4. **AI Analysis**: Use Groq's LLMs to identify key insights and action items
 5. **Results Generation**: View summaries, action items, and file-specific feedback
+6. **download report**
 
 ## ⚙️ Configuration Options
 
