@@ -1,85 +1,133 @@
-AI-Powered Code Review Summarizer
-An intelligent tool that analyzes video recordings of code review meetings, extracts actionable insights, and maps them to GitHub repositories.
+# 🚀 AI-Powered Code Review Summarizer
 
-##Overview
-The AI-Powered Code Review Summarizer is designed to streamline the code review process by automatically extracting valuable information from meeting recordings and associating that feedback with specific files in your GitHub repository. This tool helps teams document discussions, track action items, and maintain a record of design decisions made during code reviews.
-Features
+An intelligent tool that transforms code review meeting recordings into actionable insights, mapping feedback directly to your GitHub repositories.
 
-Video Transcription: Automatically convert MP4 recordings of meetings to text
-Multiple File Format Support: Process MP4, WAV, MP3, PDF, DOCX, and TXT files
-GitHub Integration: Connect to repositories to map feedback to specific files
-Action Item Extraction: Identify and assign tasks to team members
-Code Feedback Analysis: Generate targeted feedback for specific files
-Decision Documentation: Track architectural and design decisions
-Simple Mode: Generate summaries without GitHub integration
-Export Options: Download analysis reports in Markdown format
+## ✨ Features
 
-##Installation
+- **📹 Video Transcription**: Convert meeting recordings to searchable text
+- **📄 Multi-Format Support**: Process MP4, WAV, MP3, PDF, DOCX, and TXT files
+- **🔄 GitHub Integration**: Map feedback to specific repository files
+- **✅ Action Item Extraction**: Automatically identify and assign tasks
+- **💬 Code Feedback Analysis**: Generate targeted file-specific feedback
+- **🏗️ Decision Documentation**: Track architectural and design decisions
+- **🔍 Simple Mode**: Generate summaries without GitHub integration
+- **📥 Export Options**: Download analysis reports in Markdown format
 
-Clone the repository:
-bashCopygit clone https://github.com/yourusername/code-review-summarizer.git
-cd code-review-summarizer
+## 📋 Progress Summary
 
-##Install the required dependencies:
-bashCopypip install -r requirements.txt
+### Phase 1 - Speech-to-Text Transcription ✓
+- **Speech-to-Text Tools:**
+  1. Google Speech-to-Text API via `speech_recognition` library
+  2. Audio Extraction: `moviepy` for converting video files to WAV audio
+- **Transcription Module:**
+  1. Chunked audio processing (30s intervals) for reliability
+  2. Noise adjustment and error handling ([inaudible] placeholders)
+  3. Temporary file cleanup for audio/video
 
-##Set up environment variables in a .env file:
-CopyGROQ_API_KEY=your_groq_api_key
-GITHUB_TOKEN=your_github_token
+### Phase 2 - GitHub Integration ✓
+- **GitHub API Integration:**
+  1. Repository file extraction with authentication support
+  2. Selective file processing (exclude binaries, node_modules, etc.)
+  3. Content mapping for code review alignment
 
+### Phase 3 - AI-Powered Summarization ✓
+- **Integrated:**
+  1. Support for Groq API with multiple models (llama3-70b-8192 default)
+  2. Structured analysis into summary, action items, file feedback, and decisions
+  3. JSON response parsing with fallback to text reports
 
-###Requirements
+### Phase 4 - UI Development ✓
+- **Developed a Streamlit app with:**
+  1. Video upload & processing
+  2. Multi-format support
+  3. GitHub repository connection
+  4. Extracted text and summary display
+  5. Downloadable outputs (MD, TXT)
+  6. Simple mode for skipping GitHub integration
 
-Python 3.7+
-Streamlit
-MoviePy
-SpeechRecognition
-Groq Python client
-PyPDF2
-python-docx
-python-magic
-python-dotenv
-requests
+## 🛠️ Installation
 
-##Usage
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/prakash9047/zenathon--SQUAD_X.git
+   cd folder
+   ```
 
-Start the Streamlit app:
-bashCopystreamlit run app.py
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Access the application in your web browser at http://localhost:8501
-Configure your Groq API key in the sidebar (required for AI analysis)
-Upload a meeting recording (MP4) or other supported file
-Optionally enter a GitHub repository URL to map feedback to code files
-Click "Process Content" to start the analysis
-Switch to the "Results" tab to view the generated insights
-Download the analysis report or extracted text as needed
+3. Set up environment variables in a `.env` file:
+   ```
+   GROQ_API_KEY=your_groq_api_key
+   GITHUB_TOKEN=your_github_token
+   ```
 
-##Workflow
+## 📦 Requirements
 
-Upload File: The application accepts video recordings (MP4), audio files (WAV, MP3), or text-based documents (PDF, DOCX, TXT)
-Text Extraction: For video/audio files, the app extracts and transcribes the content; for text files, it extracts the content directly
-GitHub Integration: If a repository URL is provided, the app fetches relevant files to provide context for the analysis
-AI Analysis: Using Groq's large language models, the app analyzes the extracted text to identify key insights
-Results Generation: The app presents a summary, action items, file-specific feedback, and decisions made during the meeting
+- Python 3.7+
+- Streamlit
+- MoviePy
+- SpeechRecognition
+- Groq Python client
+- PyPDF2
+- python-docx
+- python-magic
+- python-dotenv
+- requests
 
-##Configuration Options
+## 🚦 Usage
 
-Groq API Key: Required for AI analysis
-Model Name: Default is "llama3-70b-8192", but other Groq models can be specified
-GitHub Token: Optional, required only for private repositories
-Simple Mode: Skip GitHub integration for faster processing
+1. Start the Streamlit app:
+   ```bash
+   streamlit run app.py
+   ```
 
-##Example usage
-pythonCopy# Processing a code review meeting recording with GitHub integration
+2. Access the application in your web browser at `http://localhost:8501`
+
+3. Configure your Groq API key in the sidebar (required for AI analysis)
+
+4. Upload a meeting recording (MP4) or other supported file
+
+5. Optionally enter a GitHub repository URL to map feedback to code files
+
+6. Click "Process Content" to start the analysis
+
+7. Switch to the "Results" tab to view the generated insights
+
+## 💻 Tech Stack
+
+- **Speech-to-Text:** `speech_recognition` (Google API), `moviepy` (audio extraction)
+- **File Processing:** `PyPDF2`, `python-docx`, `python-magic`
+- **AI Integration:** Groq API client
+- **GitHub Integration:** Requests library for GitHub API
+- **Frontend UI:** Streamlit
+
+## 🔄 Workflow
+
+1. **Upload File**: Submit video recordings (MP4), audio files, or text-based documents
+2. **Text Extraction**: The app transcribes or extracts content automatically
+3. **GitHub Integration**: Connect to repositories to provide context for analysis
+4. **AI Analysis**: Use Groq's LLMs to identify key insights and action items
+5. **Results Generation**: View summaries, action items, and file-specific feedback
+
+## ⚙️ Configuration Options
+
+- **Groq API Key**: Required for AI analysis
+- **Model Name**: Default is "llama3-70b-8192", but other Groq models can be specified
+- **GitHub Token**: Optional, required only for private repositories
+- **Simple Mode**: Skip GitHub integration for faster processing
+
+## 📝 Example
+
+```python
+# Processing a code review meeting recording with GitHub integration
 1. Enter your Groq API key in the sidebar
 2. Upload the MP4 recording of your code review meeting
 3. Enter the GitHub repository URL: https://github.com/yourusername/your-repo
 4. Click "Process Content"
 5. View the generated summary, action items, and file feedback
 6. Download the analysis report for sharing with your team
-Limitations
+```
 
-The quality of transcription depends on the audio quality of the meeting recording
-Large video files may take longer to process
-Repository analysis is limited to text-based files (excludes binary files, images, etc.)
-Private repositories require a valid GitHub token with appropriate permissions
