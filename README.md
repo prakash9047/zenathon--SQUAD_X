@@ -1,6 +1,8 @@
 # 🚀 AI-Powered Code Review Summarizer
 
 An intelligent tool that transforms code review meeting recordings into actionable insights, mapping feedback directly to your GitHub repositories.
+![image](https://github.com/user-attachments/assets/31e988ba-6183-441b-ad15-b2dbebbd2f1a)
+
 
 ## ✨ Features
 
