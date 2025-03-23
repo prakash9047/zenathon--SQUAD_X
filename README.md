@@ -55,6 +55,9 @@ An intelligent tool that transforms code review meeting recordings into actionab
 
 2. Install the required dependencies:
    ```bash
+   create virtual environment by python -m venv "your env name"
+   scipts\activate\"your env name"
+   then,
    pip install -r requirements.txt
    ```
 
