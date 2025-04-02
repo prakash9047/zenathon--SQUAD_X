@@ -1,145 +1,154 @@
 # 🚀 AI-Powered Code Review Summarizer
 
 An intelligent tool that transforms code review meeting recordings into actionable insights, mapping feedback directly to your GitHub repositories.
+
+
 ui for app
-![image](https://github.com/user-attachments/assets/31e988ba-6183-441b-ad15-b2dbebbd2f1a)
-processed file in app
-![image](https://github.com/user-attachments/assets/fd3da74b-9636-428e-a8a0-800da51c1e21)
-results page in app
-![image](https://github.com/user-attachments/assets/b13f68d5-1c96-4212-927d-7cb1cb4cf554)
+![image](https://github.com/user-attachments/assets/e940fe4e-b2cd-48a8-a0b3-aa54f3789b1b)
+
+github integration
+![image](https://github.com/user-attachments/assets/2afdb271-9515-437f-ae3d-df58420736bc)
+
+summary&results
+![image](https://github.com/user-attachments/assets/56c9f082-a077-4758-9524-ff0d14df28b9)
+
+chatbot support
+![image](https://github.com/user-attachments/assets/6656161d-b328-40dd-b1e1-393eb3cfe0d5)
+
+email integration
+![image](https://github.com/user-attachments/assets/854f7fbb-f81f-46ef-af9e-f9a30afbe2c3)
+
+asana project management tool integrition
+![image](https://github.com/user-attachments/assets/85be4422-ba55-4e88-a2d8-edbe03aeb8ab)
+
+
+✨ Features
+
+📹 Video Transcription: Convert meeting recordings to searchable text
+🔤 Direct Text Input: Option to paste meeting transcripts directly
+📄 Multi-Format Support: Process MP4, WAV, and MP3 files
+🔄 GitHub Integration: Map feedback to specific repository files
+✅ Action Item Extraction: Automatically identify and assign tasks
+💬 Code Feedback Analysis: Generate targeted file-specific feedback
+🏗️ Decision Documentation: Track architectural and design decisions
+💬 Interactive Chat: Ask questions about the meeting content
+📧 Email Integration: Send summaries directly to team members
+📋 Asana Integration: Create tasks in Asana from meeting action items
+
+🛠️ Installation
+
+--------Clone the repository:
+
+git clone https://github.com/yourusername/ai-code-review-summarizer.git
+cd ai-code-review-summarizer
+
+--------Create a virtual environment and activate it:
+python -m venv venv
+ # On Windows: venv\Scripts\activate
+
+--------Install the required dependencies:
+ypip install -r requirements.txt
+
+--------Set up environment variables in a .env file:
+
+ GROQ_API_KEY=your_groq_api_key
+
+
+####📦 Requirements
+
+Key dependencies:
+
+streamlit
+moviepy
+speech_recognition
+groq
+python-dotenv
+requests
+
+-----For a complete list of dependencies, see requirements.txt.
+
+-------Start the Streamlit app:
+streamlit run app.py
+
+>>Access the application in your web browser at http://localhost:8501
+>>Navigate through the application tabs:
+
+Upload & Process: Upload meeting recordings or enter text directly
+Summary & Insights: View the generated summary, action items, feedback, and decisions
+Chat: Ask questions about the meeting content
+Email: Send meeting summaries via email
+Asana Integration: Create tasks in Asana from meeting action items
 
 
 
-## ✨ Features
+---------💻 Tech Stack
 
-- **📹 Video Transcription**: Convert meeting recordings to searchable text
-- **📄 Multi-Format Support**: Process MP4, WAV, MP3, PDF, DOCX, and TXT files
-- **🔄 GitHub Integration**: Map feedback to specific repository files
-- **✅ Action Item Extraction**: Automatically identify and assign tasks
-- **💬 Code Feedback Analysis**: Generate targeted file-specific feedback
-- **🏗️ Decision Documentation**: Track architectural and design decisions
-- **🔍 Simple Mode**: Generate summaries without GitHub integration
-- **📥 Export Options**: Download analysis reports in Markdown format
+---Frontend: Streamlit
+---backend:
+Speech-to-Text: Speech Recognition with Google API
+Audio Processing: MoviePy
+AI Analysis: Groq API with LLaMA3 models
+Integrations: GitHub API, Asana API, Email (SMTP)
 
-## 📋 Progress Summary
+🔄 Workflow
+1. Upload Content
 
-### Phase 1 - Speech-to-Text Transcription ✓
-- **Speech-to-Text Tools:**
-  1. Google Speech-to-Text API via `speech_recognition` library
-  2. Audio Extraction: `moviepy` for converting video files to WAV audio
-- **Transcription Module:**
-  1. Chunked audio processing (30s intervals) for reliability
-  2. Noise adjustment and error handling ([inaudible] placeholders)
-  3. Temporary file cleanup for audio/video
+Upload audio/video recordings (MP4, MP3, WAV) or paste meeting transcript
+Optionally connect to GitHub repository for code context
 
-### Phase 2 - GitHub Integration ✓
-- **GitHub API Integration:**
-  1. Repository file extraction with authentication support
-  2. Selective file processing (exclude binaries, node_modules, etc.)
-  3. Content mapping for code review alignment
+2. AI Analysis
 
-### Phase 3 - AI-Powered Summarization ✓
-- **Integrated:**
-  1. Support for Groq API with multiple models (llama3-70b-8192 default)
-  2. Structured analysis into summary, action items, file feedback, and decisions
-  3. JSON response parsing with fallback to text reports
+Audio is automatically transcribed to text
+Text and repository files are analyzed by Groq LLaMA models
+AI extracts key insights, action items, feedback, and decisions
 
-### Phase 4 - UI Development ✓
-- **Developed a Streamlit app with:**
-  1. Video upload & processing
-  2. Multi-format support
-  3. GitHub repository connection
-  4. Extracted text and summary display
-  5. Downloadable outputs (MD, TXT)
-  6. Simple mode for skipping GitHub integration
+3. View & Share Results
 
-## 🛠️ Installation
+Review the AI-generated summary and insights
+Chat with the AI to ask follow-up questions
+Send results via email to team members
+Create tasks in Asana for action items
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/prakash9047/zenathon--SQUAD_X.git
-   cd folder
-   ```
+4. GitHub Integration
 
-2. Install the required dependencies:
-   ```bash
-   create virtual environment by python -m venv "your env name"
-   scipts\activate\"your env name"
-   then,
-   pip install -r requirements.txt
-   ```
+Post meeting summaries as GitHub issues
+Map feedback to specific repository files
 
-3. Set up environment variables in a `.env` file:
-   ```
-   GROQ_API_KEY=your_groq_api_key
-   GITHUB_TOKEN=your_github_token
-   ```
+-----👨‍💻 Examples
+Processing a Code Review Meeting
 
-## 📦 Requirements
+Upload an MP4 recording of your code review meeting
+Enter your GitHub repository URL and token (for private repos)
+Click "Process"
+Review the generated summary and insights
+Send the summary to team members via email
+Create tasks in Asana for action items
 
-- Python 3.7+
-- Streamlit
-- MoviePy
-- SpeechRecognition
-- Groq Python client
-- PyPDF2
-- python-docx
-- python-magic
-- python-dotenv
-- requests
+-------Using Direct Text Input
 
-## 🚦 Usage
+Check "Or enter meeting transcript directly"
+Paste your meeting transcript
+Click "Process"
+Review the generated summary and insights
 
-1. Start the Streamlit app:
-   ```bash
-   streamlit run app.py
-   ```
+------Interacting with Meeting Content
 
-2. Access the application in your web browser at `http://localhost:8501`
+Navigate to the "Chat" tab
+Ask questions about specific parts of the meeting
+Get AI-generated responses based on the meeting content
 
-3. Configure your Groq API key in the sidebar (required for AI analysis)
+------🔧 Integration Setup
+--GitHub Integration
 
-4. Upload a meeting recording (MP4) or other supported file
+Requires a GitHub token with repo scope
+Enter repository URL and branch (default: main)
 
-5. Optionally enter a GitHub repository URL to map feedback to code files
+--Email Integration
 
-6. Click "Process Content" to start the analysis
+Requires SMTP server details and credentials
+Supports sending to multiple recipients
 
-7. Switch to the "Results" tab to view the generated insights
+--Asana Integration
 
-## 💻 Tech Stack
-
-- **Speech-to-Text:** `speech_recognition` (Google API), `moviepy` (audio extraction)
-- **File Processing:** `PyPDF2`, `python-docx`, `python-magic`
-- **AI Integration:** Groq API client
-- **GitHub Integration:** Requests library for GitHub API
-- **Frontend UI:** Streamlit
-
-## 🔄 Workflow
-
-1. **Upload File**: Submit video recordings (MP4), audio files, or text-based documents
-2. **Text Extraction**: The app transcribes or extracts content automatically
-3. **GitHub Integration**: Connect to repositories to provide context for analysis
-4. **AI Analysis**: Use Groq's LLMs to identify key insights and action items
-5. **Results Generation**: View summaries, action items, and file-specific feedback
-6. **download report**
-
-## ⚙️ Configuration Options
-
-- **Groq API Key**: Required for AI analysis
-- **Model Name**: Default is "llama3-70b-8192", but other Groq models can be specified
-- **GitHub Token**: Optional, required only for private repositories
-- **Simple Mode**: Skip GitHub integration for faster processing
-
-## 📝 Example
-
-```python
-# Processing a code review meeting recording with GitHub integration
-1. Enter your Groq API key in the sidebar
-2. Upload the MP4 recording of your code review meeting
-3. Enter the GitHub repository URL: https://github.com/yourusername/your-repo
-4. Click "Process Content"
-5. View the generated summary, action items, and file feedback
-6. Download the analysis report for sharing with your team
-```
-
+Requires Asana Personal Access Token (PAT)
+Enter Asana Project URL or ID
