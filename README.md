@@ -24,185 +24,131 @@ asana project management tool integrition
 
 ✨ Features
 
-📹 Video Transcription – Convert meeting recordings to searchable text.
-
-🔤 Direct Text Input – Option to paste meeting transcripts directly.
-
-📄 Multi-Format Support – Process MP4, WAV, and MP3 files.
-
-🔄 GitHub Integration – Map feedback to specific repository files.
-
-✅ Action Item Extraction – Automatically identify and assign tasks.
-
-💬 Code Feedback Analysis – Generate targeted file-specific feedback.
-
-🏗️ Decision Documentation – Track architectural and design decisions.
-
-💬 Interactive Chat – Ask questions about the meeting content.
-
-📧 Email Integration – Send summaries directly to team members.
-
-📋 Asana Integration – Create tasks in Asana from meeting action items.
+📹 Video Transcription: Convert meeting recordings to searchable text
+🔤 Direct Text Input: Option to paste meeting transcripts directly
+📄 Multi-Format Support: Process MP4, WAV, and MP3 files
+🔄 GitHub Integration: Map feedback to specific repository files
+✅ Action Item Extraction: Automatically identify and assign tasks
+💬 Code Feedback Analysis: Generate targeted file-specific feedback
+🏗️ Decision Documentation: Track architectural and design decisions
+💬 Interactive Chat: Ask questions about the meeting content
+📧 Email Integration: Send summaries directly to team members
+📋 Asana Integration: Create tasks in Asana from meeting action items
 
 🛠️ Installation
 
-Clone the Repository
+--------Clone the repository:
 
 git clone https://github.com/yourusername/ai-code-review-summarizer.git
 cd ai-code-review-summarizer
 
-Create and Activate a Virtual Environment
-
+--------Create a virtual environment and activate it:
 python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
+ # On Windows: venv\Scripts\activate
 
-Install Dependencies
+--------Install the required dependencies:
+ypip install -r requirements.txt
 
-pip install -r requirements.txt
+--------Set up environment variables in a .env file:
 
-Set Up Environment Variables
+ GROQ_API_KEY=your_groq_api_key
 
-Create a .env file and add the following:
 
-GROQ_API_KEY=your_groq_api_key
-
-📦 Requirements
+####📦 Requirements
 
 Key dependencies:
 
 streamlit
-
 moviepy
-
 speech_recognition
-
 groq
-
 python-dotenv
-
 requests
 
-For a complete list of dependencies, see requirements.txt.
+-----For a complete list of dependencies, see requirements.txt.
 
-🚀 Usage
-
-Start the Application
-
+-------Start the Streamlit app:
 streamlit run app.py
 
-Access the Application
+>>Access the application in your web browser at http://localhost:8501
+>>Navigate through the application tabs:
 
-Open your browser and navigate to: http://localhost:8501
+Upload & Process: Upload meeting recordings or enter text directly
+Summary & Insights: View the generated summary, action items, feedback, and decisions
+Chat: Ask questions about the meeting content
+Email: Send meeting summaries via email
+Asana Integration: Create tasks in Asana from meeting action items
 
-Navigate Through Application Tabs
 
-Upload & Process – Upload recordings or input text directly.
 
-Summary & Insights – View AI-generated summaries, action items, and decisions.
+---------💻 Tech Stack
 
-Chat – Ask AI-based questions about the meeting content.
-
-Email – Send summaries via email.
-
-Asana Integration – Create tasks in Asana from extracted action items.
-
-💻 Tech Stack
-
-Frontend: Streamlit
-
-Backend:
-
-Speech-to-Text: Google API via speech_recognition
-
+---Frontend: Streamlit
+---backend:
+Speech-to-Text: Speech Recognition with Google API
 Audio Processing: MoviePy
-
-AI Analysis: Groq API (LLaMA3 models)
-
-Integrations: GitHub API, Asana API, SMTP Email
+AI Analysis: Groq API with LLaMA3 models
+Integrations: GitHub API, Asana API, Email (SMTP)
 
 🔄 Workflow
+1. Upload Content
 
-Upload Content
+Upload audio/video recordings (MP4, MP3, WAV) or paste meeting transcript
+Optionally connect to GitHub repository for code context
 
-Upload meeting recordings (MP4, MP3, WAV) or paste transcripts.
+2. AI Analysis
 
-(Optional) Connect to a GitHub repository for code context.
+Audio is automatically transcribed to text
+Text and repository files are analyzed by Groq LLaMA models
+AI extracts key insights, action items, feedback, and decisions
 
-AI Analysis
+3. View & Share Results
 
-Audio is transcribed to text.
+Review the AI-generated summary and insights
+Chat with the AI to ask follow-up questions
+Send results via email to team members
+Create tasks in Asana for action items
 
-AI analyzes meeting content and extracts key insights, feedback, and decisions.
+4. GitHub Integration
 
-View & Share Results
+Post meeting summaries as GitHub issues
+Map feedback to specific repository files
 
-Review AI-generated summaries and insights.
-
-Chat with AI for follow-up questions.
-
-Send results via email.
-
-Create Asana tasks from extracted action items.
-
-GitHub Integration
-
-Post summaries as GitHub issues.
-
-Map feedback to specific repository files.
-
-👨‍💻 Examples
-
+-----👨‍💻 Examples
 Processing a Code Review Meeting
 
-Upload an MP4 recording of your code review meeting.
+Upload an MP4 recording of your code review meeting
+Enter your GitHub repository URL and token (for private repos)
+Click "Process"
+Review the generated summary and insights
+Send the summary to team members via email
+Create tasks in Asana for action items
 
-Enter your GitHub repository URL and token (for private repos).
+-------Using Direct Text Input
 
-Click Process.
+Check "Or enter meeting transcript directly"
+Paste your meeting transcript
+Click "Process"
+Review the generated summary and insights
 
-Review the generated summary and insights.
+------Interacting with Meeting Content
 
-Send the summary via email.
+Navigate to the "Chat" tab
+Ask questions about specific parts of the meeting
+Get AI-generated responses based on the meeting content
 
-Create Asana tasks for action items.
+------🔧 Integration Setup
+--GitHub Integration
 
-Using Direct Text Input
+Requires a GitHub token with repo scope
+Enter repository URL and branch (default: main)
 
-Check "Or enter meeting transcript directly".
+--Email Integration
 
-Paste your meeting transcript.
+Requires SMTP server details and credentials
+Supports sending to multiple recipients
 
-Click Process.
+--Asana Integration
 
-Review the generated summary and insights.
-
-Interacting with Meeting Content
-
-Go to the Chat tab.
-
-Ask questions about specific parts of the meeting.
-
-Receive AI-generated responses based on the meeting content.
-
-🔧 Integration Setup
-
-GitHub Integration
-
-Requires a GitHub token with repo scope.
-
-Enter repository URL and branch (default: main).
-
-Email Integration
-
-Requires SMTP server details and credentials.
-
-Supports sending to multiple recipients.
-
-Asana Integration
-
-Requires Asana Personal Access Token (PAT).
-
-Enter Asana Project URL or ID.
+Requires Asana Personal Access Token (PAT)
+Enter Asana Project URL or ID
