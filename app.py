@@ -16,10 +16,6 @@ import base64
 
 # Load environment variables (e.g., GROQ_API_KEY)
 load_dotenv()
-// CODE REVIEW: Missing code to integrate Rock API and assign a task in Asana project
-// RECOMMENDATION: Add the specified line of code to integrate the Rock API and assign a task in the Asana project
-// SUGGESTED CODE:
-// print("I love Rock API") and asana_task_assignment() function call
 
 # Set page configuration
 st.set_page_config(page_title="AI Code Review Summarizer", layout="wide")
@@ -41,6 +37,8 @@ if 'chat_history' not in st.session_state:
     st.session_state['chat_history'] = []
 if 'asana_tasks_created' not in st.session_state:
     st.session_state['asana_tasks_created'] = []
+if 'github_files_content' not in st.session_state:
+    st.session_state['github_files_content'] = {}
 
 # --------------------------------------------------------------------
 # GitHub Integration Functions
@@ -132,6 +130,82 @@ def update_github_comments(repo_url, branch, github_token, comment_body):
     response = requests.post(url, headers=headers, json=data)
     return response.status_code == 201
 
+def add_comments_to_code(file_content, feedback_items):
+    """
+    Add review comments to code file based on feedback items.
+    Returns the updated file content with comments inserted.
+    """
+    if not feedback_items or not file_content:
+        return file_content
+
+    # Convert file content to a list of lines for processing
+    lines = file_content.split('\n')
+
+    # Sort feedback by line number (descending) so we can insert from bottom up
+    # This prevents line numbers from shifting as we add comments
+    sorted_feedback = sorted(
+        feedback_items,
+        key=lambda x: int(str(x.get('line_number', '0')).split('-')[0]) if isinstance(x.get('line_number'), (int, str)) else 0,
+        reverse=True
+    )
+
+    for item in sorted_feedback:
+        # Handle line number which could be a single number or range (e.g., "10-15")
+        line_ref = item.get('line_number', '')
+        if not line_ref:
+            continue
+
+        # Parse line reference
+        if isinstance(line_ref, int):
+            # Simple integer line number
+            line_num = line_ref
+            insert_at = line_num
+        elif isinstance(line_ref, str):
+            if '-' in line_ref:
+                # Line range (e.g., "10-15")
+                try:
+                    start, end = map(int, line_ref.split('-'))
+                    # Insert comment before the range
+                    line_num = start
+                    insert_at = line_num
+                except ValueError:
+                    # If parsing fails, skip this item
+                    continue
+            else:
+                # Single line as string
+                try:
+                    line_num = int(line_ref)
+                    insert_at = line_num
+                except ValueError:
+                    # If parsing fails, skip this item
+                    continue
+        else:
+            # Unexpected type
+            continue
+
+        # Adjust line number to zero-based index
+        insert_at = max(0, min(insert_at - 1, len(lines)))
+
+        # Prepare comment text
+        comment_text = f"// CODE REVIEW: {item.get('issue', '')}"
+        recommendation = item.get('recommendation', '')
+        if recommendation:
+            comment_text += f"\n// RECOMMENDATION: {recommendation}"
+
+        code_suggestion = item.get('code_suggestion', '')
+        if code_suggestion:
+            # Format the code suggestion as a comment
+            code_lines = code_suggestion.strip().split('\n')
+            comment_text += "\n// SUGGESTED CODE:"
+            for code_line in code_lines:
+                comment_text += f"\n// {code_line}"
+
+        # Insert comment before the specified line
+        lines.insert(insert_at, comment_text)
+
+    # Join lines back together
+    return '\n'.join(lines)
+
 # --------------------------------------------------------------------
 # Utility Functions
 # --------------------------------------------------------------------
@@ -210,14 +284,22 @@ GitHub files: {file_list}
 Provide:
 1. A summary
 2. Action items (task, assignee)
-3. Code feedback (file, feedback)
+3. Code feedback (file, feedback, line_number, recommendation, code_suggestion)
 4. Decisions
 
 Return JSON:
 {{
     "summary": "...",
     "action_items": [{{"task": "...", "assignee": "..."}}],
-    "code_feedback": {{"file_path": "feedback"}},
+    "code_feedback": [
+        {{
+            "file": "file_path",
+            "feedback": "...",
+            "line_number": "...",
+            "recommendation": "...",
+            "code_suggestion": "..."
+        }}
+    ],
     "decisions": ["..."]
 }}
 """
@@ -225,7 +307,7 @@ Return JSON:
         response = client.chat.completions.create(
             model="llama3-8b-8192",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=2000,
+            max_tokens=2500,
             temperature=0.5
         )
         raw_response = response.choices[0].message.content
@@ -240,15 +322,15 @@ Return JSON:
                 return json.loads(extracted_json)
         except:
             pass
-        
+
         st.error("Failed to parse Groq response.")
-        return {"summary": raw_response if 'raw_response' in locals() else "", 
-                "action_items": [], 
-                "code_feedback": {}, 
+        return {"summary": raw_response if 'raw_response' in locals() else "",
+                "action_items": [],
+                "code_feedback": [],
                 "decisions": []}
     except Exception as e:
         st.error(f"Groq API error: {e}")
-        return {"summary": "Analysis failed.", "action_items": [], "code_feedback": {}, "decisions": []}
+        return {"summary": "Analysis failed.", "action_items": [], "code_feedback": [], "decisions": []}
 
 def chatbot_response(query, summary_data):
     """Generate chatbot response using Groq and summary data."""
@@ -314,12 +396,12 @@ def validate_asana_credentials(asana_pat, project_id):
     """Validate Asana credentials by making a test API call."""
     if not asana_pat or not project_id:
         return False, "Missing Asana PAT or Project ID"
-    
+
     headers = {
         'Authorization': f'Bearer {asana_pat}',
         'Accept': 'application/json'
     }
-    
+
     # Try to get project details to validate credentials and project ID
     url = f'https://app.asana.com/api/1.0/projects/{project_id}'
     try:
@@ -341,7 +423,7 @@ def get_asana_users(asana_pat, workspace_gid):
         'Authorization': f'Bearer {asana_pat}',
         'Accept': 'application/json'
     }
-    
+
     url = f'https://app.asana.com/api/1.0/workspaces/{workspace_gid}/users'
     try:
         response = requests.get(url, headers=headers)
@@ -358,7 +440,7 @@ def get_workspace_from_project(asana_pat, project_id):
         'Authorization': f'Bearer {asana_pat}',
         'Accept': 'application/json'
     }
-    
+
     url = f'https://app.asana.com/api/1.0/projects/{project_id}'
     try:
         response = requests.get(url, headers=headers)
@@ -369,16 +451,12 @@ def get_workspace_from_project(asana_pat, project_id):
         return None
 
 def create_asana_task(asana_pat, project_id, task_name, task_notes=None, assignee_name=None):
-    """
-    Create a task in Asana with improved handling of assignees.
-    """
     url = 'https://app.asana.com/api/1.0/tasks'
     headers = {
         'Authorization': f'Bearer {asana_pat}',
         'Content-Type': 'application/json'
     }
-    
-    # Prepare base payload
+
     payload = {
         "data": {
             "name": task_name,
@@ -386,28 +464,25 @@ def create_asana_task(asana_pat, project_id, task_name, task_notes=None, assigne
             "projects": [project_id]
         }
     }
-    
-    # Handle assignee if provided
+
     if assignee_name and assignee_name.strip().lower() not in ['', 'n/a', 'none', 'unassigned']:
-        # Get workspace from project to find users
         workspace_gid = get_workspace_from_project(asana_pat, project_id)
         if workspace_gid:
-            # Get users in workspace
             users = get_asana_users(asana_pat, workspace_gid)
-            # Find closest match for assignee
             assignee_name_lower = assignee_name.strip().lower()
             for name, gid in users.items():
-                if assignee_name_lower in name:  # Partial match
+                if assignee_name_lower in name:
                     payload["data"]["assignee"] = gid
                     break
-    
+
     try:
         response = requests.post(url, json=payload, headers=headers)
+        response_data = response.json()
         if response.status_code in [200, 201]:
-            task_data = response.json().get('data', {})
+            task_data = response_data.get('data', {})
             return True, task_data.get('gid', 'unknown')
         else:
-            error_msg = response.json().get('errors', [{}])[0].get('message', 'Unknown error')
+            error_msg = response_data.get('errors', [{}])[0].get('message', 'Unknown error')
             return False, f"Asana API error: {error_msg}"
     except Exception as e:
         return False, f"Asana API exception: {str(e)}"
@@ -419,7 +494,7 @@ def process_all_asana_tasks(asana_pat, project_id, action_items):
         task_name = item.get('task', 'Untitled Task')
         assignee = item.get('assignee', '')
         task_notes = f"Assignee: {assignee}\nAutomatically created from code review meeting."
-        
+
         success, task_id = create_asana_task(asana_pat, project_id, task_name, task_notes, assignee)
         results.append({
             "task": task_name,
@@ -428,7 +503,7 @@ def process_all_asana_tasks(asana_pat, project_id, action_items):
             "task_id": task_id if success else None,
             "error": task_id if not success else None
         })
-    
+
     return results
 
 # --------------------------------------------------------------------
@@ -439,22 +514,22 @@ def upload_tab():
     """Upload and process meeting content (includes GitHub integration)."""
     st.header("Upload & Process")
     uploaded_file = st.file_uploader("Upload audio/video", type=['mp4', 'mp3', 'wav'])
-    
+
     # Direct text input option
     text_input_option = st.checkbox("Or enter meeting transcript directly")
     direct_text = ""
     if text_input_option:
         direct_text = st.text_area("Enter meeting transcript", height=200)
-    
+
     repo_url = st.text_input("GitHub Repo URL (optional)")
     github_token = st.text_input("GitHub Token (optional)", type="password")
     branch = st.text_input("GitHub Branch (default: main)", value="main")
-    
+
     if st.button("Process"):
         if not uploaded_file and not direct_text:
             st.error("Please upload a file or enter a meeting transcript.")
             return
-            
+
         with st.spinner("Processing..."):
             text = ""
             if uploaded_file:
@@ -464,16 +539,17 @@ def upload_tab():
                 text = speech_to_text(audio_path)
             else:
                 text = direct_text
-                
+
             files_dict = {}
             if repo_url:
                 files_dict, err = get_github_files(repo_url, branch, github_token)
                 if err:
                     st.error(err)
-                    
+
             summary_data = analyze_with_groq(text, files_dict)
             st.session_state['extracted_text'] = text
             st.session_state['summary_data'] = summary_data
+            st.session_state['github_files_content'] = files_dict
             st.session_state['processing_complete'] = True
             st.session_state['meeting_archive'].append({
                 "id": str(uuid.uuid4()),
@@ -481,11 +557,36 @@ def upload_tab():
                 "summary_data": summary_data
             })
             st.success("Processing complete!")
-    
-    # GitHub integration UI
+
+    # GitHub integration UI for adding comments to code
+    if st.session_state.get('processing_complete') and repo_url and github_token and st.session_state['summary_data'].get('code_feedback'):
+        st.subheader("Add Code Review Comments to GitHub Files")
+        code_feedback_items = st.session_state['summary_data']['code_feedback']
+        if code_feedback_items and st.session_state['github_files_content']:
+            updated_files = {}
+            for file_path, content in st.session_state['github_files_content'].items():
+                relevant_feedback = [item for item in code_feedback_items if item.get('file') == file_path]
+                if relevant_feedback:
+                    updated_content = add_comments_to_code(content, relevant_feedback)
+                    updated_files[file_path] = updated_content
+            if updated_files:
+                st.write("Modified files with comments:")
+                for file_path, updated_content in updated_files.items():
+                    st.subheader(f"File: {file_path}")
+                    st.code(updated_content, language="python") # Adjust language as needed
+                    # Note: Directly committing these changes to GitHub is complex and requires
+                    # more advanced GitHub API interactions (creating commits, branches, PRs).
+                    # This UI provides a preview of the changes.
+                    st.info("The above code shows the comments that would be added. Automatically pushing these changes to GitHub requires more complex implementation using the GitHub API (e.g., creating a new branch, committing the changes, and creating a pull request), which is beyond the scope of this basic integration.")
+            else:
+                st.info("No code feedback found for the fetched GitHub files.")
+        else:
+            st.info("No code feedback available or GitHub files were not fetched.")
+
+    # GitHub integration UI for posting summary as issue
     if st.session_state.get('processing_complete') and repo_url and github_token:
         st.subheader("Update GitHub with Meeting Summary")
-        comment_body = st.text_area("Meeting Summary to post on GitHub (issue body):", 
+        comment_body = st.text_area("Meeting Summary to post on GitHub (issue body):",
                                     value=st.session_state['summary_data'].get('summary', ''))
         if st.button("Post Meeting Summary to GitHub"):
             success = update_github_comments(repo_url, branch, github_token, comment_body)
@@ -511,18 +612,20 @@ def summary_tab():
         for item in action_items:
             st.write(f"- {item.get('task', '')} (Assignee: {item.get('assignee', '')})")
     st.subheader("Code Feedback")
-    code_feedback = data.get('code_feedback', {})
-    if isinstance(code_feedback, dict) and not code_feedback:
+    code_feedback = data.get('code_feedback', [])
+    if not code_feedback:
         st.info("No code feedback detected in the meeting.")
     else:
-        # Handle both dictionary and simple string feedback
-        if isinstance(code_feedback, dict):
-            for file, feedback in code_feedback.items():
-                st.markdown(f"**{file}**:")
-                st.code(feedback)
-        else:
-            st.markdown("**File: app.py**:")
-            st.code(code_feedback)
+        for item in code_feedback:
+            st.markdown(f"**{item.get('file', 'N/A')}:**")
+            st.write(f"  - **Issue:** {item.get('feedback', '')}")
+            if item.get('line_number'):
+                st.write(f"  - **Line(s):** {item.get('line_number')}")
+            if item.get('recommendation'):
+                st.write(f"  - **Recommendation:** {item.get('recommendation')}")
+            if item.get('code_suggestion'):
+                st.write("  - **Suggested Code:**")
+                st.code(item['code_suggestion'])
     st.subheader("Decisions")
     decisions = data.get('decisions', [])
     if not decisions:
@@ -530,7 +633,7 @@ def summary_tab():
     else:
         for decision in decisions:
             st.write(f"- {decision}")
-    
+
     # Add option to download summary as JSON
     if st.button("Download Summary as JSON"):
         json_data = json.dumps(data, indent=2)
@@ -544,16 +647,16 @@ def chat_tab():
     if not st.session_state.get('processing_complete'):
         st.info("Please process a meeting first.")
         return
-        
+
     # Clear chat button
     if st.button("Clear Chat History"):
         st.session_state['chat_history'] = []
         st.rerun()
-        
+
     chat_container = st.container()
     for msg in st.session_state['chat_history']:
         chat_container.chat_message(msg["role"]).write(msg["content"])
-        
+
     if query := st.chat_input("Ask about the meeting..."):
         st.session_state['chat_history'].append({"role": "user", "content": query})
         chat_container.chat_message("user").write(query)
@@ -575,7 +678,7 @@ def email_tab():
     sender_email = st.text_input("Sender Email", value="")
     sender_password = st.text_input("Sender Password", type="password")
     recipients = st.text_input("Recipient Emails (comma-separated)", "")
-    
+
     # Preview email content
     if st.checkbox("Preview email content"):
         st.subheader("Email Preview")
@@ -588,7 +691,7 @@ def email_tab():
         st.write("### Action Items")
         for item in action_items:
             st.write(f"- {item.get('task', '')} (Assignee: {item.get('assignee', '')})")
-    
+
     if st.button("Send Email"):
         if not (smtp_server and smtp_port and sender_email and sender_password and recipients):
             st.error("Please fill in all SMTP and recipient fields.")
@@ -605,11 +708,11 @@ def asana_tab():
     if not st.session_state.get('processing_complete'):
         st.info("Please process a meeting first.")
         return
-    
+
     # Display current action items
     st.subheader("Current Action Items")
     action_items = st.session_state['summary_data'].get('action_items', [])
-    
+
     # If no action items found, provide manual entry option
     if not action_items:
         st.warning("No action items were detected in the meeting transcript.")
@@ -617,25 +720,25 @@ def asana_tab():
         # Show existing action items
         for i, item in enumerate(action_items):
             st.write(f"{i+1}. **{item.get('task', 'Untitled')}** (Assignee: {item.get('assignee', 'Unassigned')})")
-    
+
     # Show Asana integration fields if we have action items
     if action_items:
         st.subheader("Asana Integration")
         # Asana credentials input
         asana_pat = st.text_input("Asana Personal Access Token (PAT)", type="password", key="asana_pat")
-        asana_project_url = st.text_input("Asana Project URL or ID", key="asana_project_url", 
+        asana_project_url = st.text_input("Asana Project URL or ID", key="asana_project_url",
                                             help="Paste the full URL or project ID")
-        
+
         # Extract project ID from URL
         project_id = extract_asana_project_id(asana_project_url) if asana_project_url else ""
-        
+
         # Validate inputs and provide real-time feedback
         if asana_pat and project_id:
             # Clear validation if URL changed
             if 'last_asana_project' not in st.session_state or st.session_state.get('last_asana_project') != project_id:
                 st.session_state.pop('asana_validated', None)
                 st.session_state['last_asana_project'] = project_id
-                
+
             # Check if already validated to avoid repeated API calls
             if 'asana_validated' not in st.session_state:
                 with st.spinner("Validating Asana credentials..."):
@@ -646,27 +749,26 @@ def asana_tab():
                     else:
                         st.error(f"❌ Asana validation failed: {message}")
                         st.session_state['asana_validated'] = False
-        
-        # Process button specifically for Asana
+                        # Process button specifically for Asana
         if st.button("Process Asana Tasks", key="process_asana"):
             if not asana_pat or not project_id:
                 st.error("Please provide both Asana PAT and Project ID.")
                 return
-            
+
             current_action_items = st.session_state['summary_data'].get('action_items', [])
             if not current_action_items:
                 st.error("No action items to process.")
                 return
-                
+
             with st.spinner("Creating tasks in Asana..."):
                 results = process_all_asana_tasks(asana_pat, project_id, current_action_items)
-                
+
                 # Track results for user feedback
                 success_count = sum(1 for r in results if r['success'])
-                
+
                 if success_count > 0:
                     st.success(f"✅ Successfully created {success_count} tasks in Asana!")
-                    
+
                     # Show details of created tasks
                     st.subheader("Created Tasks")
                     for result in results:
@@ -674,10 +776,10 @@ def asana_tab():
                             st.write(f"✅ '{result['task']}' - Assignee: {result['assignee']}")
                         else:
                             st.write(f"❌ Failed to create '{result['task']}': {result['error']}")
-                            
+
                     # Store created tasks in session state
                     st.session_state['asana_tasks_created'] = results
-                    
+
                 else:
                     st.error("Failed to create any tasks in Asana. Please check your credentials and try again.")
 
@@ -699,6 +801,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-    #gemini
 
+    #gemini
