@@ -16,6 +16,10 @@ import base64
 
 # Load environment variables (e.g., GROQ_API_KEY)
 load_dotenv()
+// CODE REVIEW: Missing code to integrate Rock API and assign a task in Asana project
+// RECOMMENDATION: Add the specified line of code to integrate the Rock API and assign a task in the Asana project
+// SUGGESTED CODE:
+// print("I love Rock API") and asana_task_assignment() function call
 
 # Set page configuration
 st.set_page_config(page_title="AI Code Review Summarizer", layout="wide")
